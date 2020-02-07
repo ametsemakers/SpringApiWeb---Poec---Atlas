@@ -21,6 +21,13 @@ public class Monnaie {
 	@NotNull(message = "Le taux de change doit être positif")
 	@Min(value = 0, message = "Le taux de change doit être positif")
 	private BigDecimal tauxDeChange;
+	
+	public Monnaie() {}
+	
+	public Monnaie(String code, BigDecimal tauxDeChange) {
+		this.code = code;
+		this.tauxDeChange = tauxDeChange;
+	}
 
 	public String getCode() {
 		return code;
