@@ -56,7 +56,7 @@ public class MonnaieController {
 			
 			monnaieService.create(monnaie.getCode(), monnaie.getTauxDeChange());
 			URI uri = uriBuilder.path("/monnaie/{codeMonnaie}").buildAndExpand(monnaie.getCode()).toUri();
-			return ResponseEntity.created(uri).body(monnaie);
+			return ResponseEntity.created(uri).header("Link", this.createLink(monnaie.getCode()).toString()).body(monnaie);
 		}
 		return ResponseEntity.status(409).body(monnaie);
 		
@@ -65,11 +65,10 @@ public class MonnaieController {
 	@PostMapping("/{codeMonnaie}/EUR")
 	public ResponseEntity<Montant> convert(@RequestBody Montant montant,
 											@PathVariable String codeMonnaie) {
-		// à redifinir sans créer le montant en base (vire Montant)
 		try {
 			Monnaie monnaie = monnaieService.getByCode(codeMonnaie);
 			
-			montant = monnaieService.convert(montant, monnaie);
+			montant.setMontant(monnaieService.convert(montant, monnaie));
 			return ResponseEntity.status(200).body(montant);
 			
 		} catch (MonnaieInexistanteException e) {
@@ -86,21 +85,32 @@ public class MonnaieController {
 		try {
 			Monnaie monnaie = monnaieService.modify(codeMonnaie, tauxDeChangeDto.getTauxDeChange());
 			
-			Link lien = WebMvcLinkBuilder.linkTo(MonnaieController.class, codeMonnaie)
-										.withRel("self")
-										.withTitle("Mon super lien");
-			return ResponseEntity.ok().header("Link", lien.toString()).body(monnaie);
+			return ResponseEntity.ok().header("Link", this.createLink(codeMonnaie).toString()).body(monnaie);
 		} catch (MonnaieInexistanteException e) {
 			Monnaie monnaie = monnaieService.create(codeMonnaie, tauxDeChangeDto.getTauxDeChange());
 			URI uri = uriBuilder.path("/monnaie/{codeMonnaie}").buildAndExpand(monnaie.getCode()).toUri();
-			return ResponseEntity.created(uri).body(monnaie);
+			
+			return ResponseEntity.created(uri).header("Link", this.createLink(codeMonnaie).toString()).body(monnaie);
 		}
 		
 	}
 	
-	@DeleteMapping("/monnaie/{codeMonnaie}")
-	public void deleteMonnaie(@PathVariable String codeMonnaie) {
+	@DeleteMapping("/{codeMonnaie}")
+	public ResponseEntity<Monnaie> deleteMonnaie(@PathVariable String codeMonnaie) {
+		try {
+			monnaieService.getByCode(codeMonnaie);
+		} catch (MonnaieInexistanteException e) {
+			return ResponseEntity.status(404).build();
+		}
 		monnaieService.deleteByCode(codeMonnaie);
+		return ResponseEntity.ok().build();
+	}
+	
+	private Link createLink(String codeMonnaie) {
+		Link lien; 
+		return lien = WebMvcLinkBuilder.linkTo(MonnaieController.class, codeMonnaie)
+				.withRel("self")
+				.withTitle("L'adresse de la monnaie");
 	}
 	
 }

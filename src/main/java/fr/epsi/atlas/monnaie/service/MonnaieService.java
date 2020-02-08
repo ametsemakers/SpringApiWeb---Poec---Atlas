@@ -1,7 +1,7 @@
 package fr.epsi.atlas.monnaie.service;
 
 import java.math.BigDecimal;
-// import java.util.Iterator;
+
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -41,24 +41,21 @@ public class MonnaieService {
 	@Transactional
 	public void deleteByCode(String codeMonnaie) {
 		monnaieRepository.deleteById(codeMonnaie);
-		//Monnaie monnaie = monnaieRepository.findById(codeMonnaie).get();
-		//monnaieRepository.delete(monnaie);
 	}
 
 	@Transactional
-	public Monnaie modify(String codeMonnaie, BigDecimal tauxDeChange) throws MonnaieInexistanteException{	
+	public Monnaie modify(String codeMonnaie, BigDecimal tauxDeChange) throws MonnaieInexistanteException {	
 		try {
-			Monnaie mmonnaie = this.getByCode(codeMonnaie);
-			mmonnaie.setTauxDeChange(tauxDeChange);
-			return mmonnaie;
+			Monnaie monnaie = this.getByCode(codeMonnaie);
+			monnaie.setTauxDeChange(tauxDeChange);
+			return monnaie;
 			
 		} catch (MonnaieInexistanteException e) {
 			throw new MonnaieInexistanteException();
 		}
 	}
 	
-	public Montant convert(Montant montant, Monnaie monnaie) {
-			montant.setMontant(montant.getMontant().multiply(monnaie.getTauxDeChange()));
-			return montant;
+	public BigDecimal convert(Montant montant, Monnaie monnaie) {		
+			return monnaie.convert(montant.getMontant());
 	}
 }

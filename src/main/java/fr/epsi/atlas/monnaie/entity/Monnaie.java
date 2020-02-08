@@ -41,4 +41,8 @@ public class Monnaie {
 	public void setTauxDeChange(BigDecimal tauxDeChange) {
 		this.tauxDeChange = tauxDeChange;
 	}
+	
+	public BigDecimal convert(BigDecimal montant) {
+		return montant.multiply(this.tauxDeChange);
+	}
 }
